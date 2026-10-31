@@ -840,7 +840,7 @@ A.guardarGasto = () => { const p=S.p; const b=bolsillos().find(x=>x.id===p.bolsi
 };
 A.naOrigen = el => { S.p.origen = el.dataset.id; render(); };
 A.naConfirmar = () => { S.p.cubierto = S.p.origen; S.view="gasto"; A.guardarGasto(); };
-A.borrarGasto = () => { const id=S.p.editId; cambioMes(m=>{ m.gastos=(m.gastos||[]).filter(g=>g.id!==id); }, "Gasto borrado"); volver(); };
+A.borrarGasto = () => { const id=S.p.editId; volver(); cambioMes(m=>{ m.gastos=(m.gastos||[]).filter(g=>g.id!==id); }, "Gasto borrado"); };
 A.editarGasto = el => { const g=gastos().find(x=>x.id===el.dataset.id); ir("gasto",{bolsillo:g.bolsillo, monto:g.valor, nota:g.nota||"", editId:g.id}); };
 A.gastoEn = () => ir("gasto",{bolsillo:S.p.id, monto:0});
 A.ing2 = () => ir("ingreso2",{monto:S.p.monto, tipo:S.p.setup?"fijo":"una", quien:"", volverA:S.p.volverA});
@@ -879,7 +879,8 @@ A.guardarCrear0 = () => crearB(0);
 A.guardarNombre = () => { const n=(S.p.nombre||"").trim(); if(!n) return; const id=S.p.renombrar; cambioMes(m=>{ const b=m.bolsillos.find(x=>x.id===id); b.nombre=n; b.icono=iconoPara(n); }, "Nombre cambiado"); volver(); };
 A.borrarB = () => { S.view="borrar"; render(); };
 A.confirmarBorrar = () => { const id=S.p.id; const b=bolsillos().find(x=>x.id===id); const g=gastado(id);
-  cambioMes(m=>{ const x=m.bolsillos.find(y=>y.id===id); if(g>0){ x.asignado=g; x.borrado=true; } else m.bolsillos=m.bolsillos.filter(y=>y.id!==id); }, "Borraste "+b.nombre+". Lo que quedaba pasó a tu plata libre."); S.stack=[]; S.view="bolsillos"; S.p={}; render(); };
+  S.stack=[]; S.view="bolsillos"; S.p={};
+  cambioMes(m=>{ const x=m.bolsillos.find(y=>y.id===id); if(g>0){ x.asignado=g; x.borrado=true; } else m.bolsillos=m.bolsillos.filter(y=>y.id!==id); }, "Borraste "+b.nombre+". Lo que quedaba pasó a tu plata libre."); };
 
 /* próximo mes */
 const enProximo = () => S.view==="proximo" || S.stack.some(x=>x.view==="proximo");
