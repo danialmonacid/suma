@@ -209,7 +209,7 @@ nav.tabs{position:fixed;left:50%;transform:translateX(-50%);width:min(452px,calc
 </head>
 <body>
 <div id="app" aria-live="polite">
-  <div class="top"><img class="logo" src="logo.png" alt="Suma"></div>
+  <div class="top"><img class="logo" src="logo.png?v=2" alt="Suma"></div>
   <div class="empty"><p class="q">Cargando tus cuentas…</p><p class="small">En un momento ves tus cuentas y tus bolsillos.</p></div>
 </div>
 <div id="layer"></div>
@@ -309,7 +309,7 @@ const P = {
   telefono:'<rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/>',
   carro:'<path d="M5 17V9.5L7 5h10l2 4.5V17"/><path d="M3 17h18v2H3zM5 10h14"/><circle cx="8" cy="13.5" r="1"/><circle cx="16" cy="13.5" r="1"/>'
 };
-const HEADER = `<div class="top"><img class="logo" src="logo.png" alt="Suma"><img class="avatar" src="icon-192.png" alt=""></div>`;
+const HEADER = `<div class="top"><img class="logo" src="logo.png?v=2" alt="Suma"><img class="avatar" src="icon-192.png" alt=""></div>`;
 const ic = (k, extra="") => `<svg class="ic" viewBox="0 0 24 24" aria-hidden="true" ${extra}>${P[k]||P.bolsa}</svg>`;
 const COLORES = [["#FBE4EF","#B83280"],["#EFE6DA","#7A5A3A"],["#E1F3E7","#2E7D4F"],["#DDF2F1","#12807A"],["#E3EEFB","#2F6DB5"],["#FDEBDD","#A3521A"]];
 const IDEAS = [["Mascotas","mascotas"],["Salud","salud"],["Ropa","ropa"],["Salidas","salidas"],["Ahorro","ahorro"],["Hogar","hogar"],["Belleza","belleza"],["Estudio","estudio"]];
@@ -507,7 +507,7 @@ V.cuentas = () => {
   ${cs.length?"":`<div class="empty"><p class="q">Todavía no tienes cuentas</p><p class="small">Agrega las facturas que pagas: luz, agua, arriendo…</p></div><button class="btn2" data-act="misCuentas">${ic("mas",'style="stroke-width:2.4"')}Crear cuentas</button>`}
   ${navTabs()}`;
 };
-V.bolsillos = () => `${avisoAdelantado()}<div><h1 class="mes">Bolsillos</h1><span class="sub">Te queda <b class="num" style="color:var(--ink);font-weight:600">${money(totalQuedan())}</b> en tus bolsillos para ${Math.max(0,diasMes(S.mesKey)-Math.max(diaHoy(),1))} días</span></div>
+V.bolsillos = () => esGuia() ? V.bolsillosGuia() : `${avisoAdelantado()}<div><h1 class="mes">Bolsillos</h1><span class="sub">Te queda <b class="num" style="color:var(--ink);font-weight:600">${money(totalQuedan())}</b> en tus bolsillos para ${Math.max(0,diasMes(S.mesKey)-Math.max(diaHoy(),1))} días</span></div>
   ${ayuda("<b>Plata separada para cada cosa.</b> Cada gasto se resta de su bolsillo.", 2)}
   <div class="sec">${ordenados().map(liBolsillo).join("")}</div>
   <button class="btn2" data-act="crear">${ic("mas",'style="stroke-width:2.4"')}Crear bolsillo</button>
@@ -591,7 +591,7 @@ function hojaNoAlcanza(){ const p=S.p; const b=bolsillos().find(x=>x.id===p.bols
   <div style="display:flex;flex-direction:column;gap:4px"><button class="btn" data-act="naConfirmar" ${p.origen?"":"disabled"}>${p.origen?"Sacar de "+nom:"Sacar de otro bolsillo"}</button><button class="btn3" data-act="cerrarHoja">Cambiar el valor del gasto</button></div></section></div>`; }
 
 /* ingreso */
-V.ingreso1 = () => `<div class="top"><h1 class="h1">Agregar ingreso</h1>${cancelar()}</div><span class="q" style="margin-top:4px">¿Cuánto recibiste?</span>
+V.ingreso1 = () => `<div class="top"><h1 class="h1">Agregar ingreso</h1>${cancelar()}</div><span class="q" style="margin-top:4px">${S.p.setup?"¿Cuánto recibes cada mes?":"¿Cuánto recibiste?"}</span>
   <section class="valor"><span class="num cifra">${money(S.p.monto||0)}</span><span class="small">Se suma a tu plata libre, en Otros</span></section>${teclado()}
   <div class="bottom"><button class="btn" data-act="ing2" ${S.p.monto>0?"":"disabled"}>Siguiente${ic("sig",'style="stroke-width:2.4"')}</button></div>`;
 V.ingreso2 = () => { const p=S.p; return `<div class="top">${backBtn()}${cancelar("cancelarFlujo")}</div>
@@ -696,15 +696,17 @@ V.paso3cambiar = () => { const D=S.draft; const L=draftLibre(); const o=draftOtr
   <div class="bottom"><button class="btn" data-act="empezar" ${o<0?"disabled":""}>Listo, empezar el mes</button></div>`; };
 
 /* ajustes: recibo, cuentas, avisos, meses */
-V.recibo = () => `<div class="top">${backBtn("Ajustes")}</div><div><h1 class="h1">Lo que recibo cada mes</h1><span class="txt">Te lo preguntamos al empezar cada mes.</span></div>
+V.recibo = () => `${esGuia()?pasoGuia(1):`<div class="top">${backBtn((S.stack[S.stack.length-1]||{}).view==="ajustes"?"Ajustes":"Atrás")}</div>`}<div><h1 class="${esGuia()?"mes":"h1"}" ${esGuia()?'style="margin-top:6px"':""}>Lo que recibes cada mes</h1><span class="txt">${esGuia()?"La plata que te llega todos los meses: tu sueldo, una pensión, lo que te da alguien…":"Te lo preguntamos al empezar cada mes."}</span></div>
   ${(S.cfg?.ingresosFijos||[]).map(i=>`<button class="item" data-act="editIngFijo" data-id="${i.id}"><span class="sq">${ic("persona")}</span><span class="mid"><span class="t">${esc(i.nombre)}</span><span class="s">Todos los meses</span></span><span class="num v">${money(i.valor)}</span>${ic("pen",'class="ic pen"')}</button>`).join("")}
   <button class="btn2" data-act="ingRecibo">${ic("mas",'style="stroke-width:2.4"')}Agregar ingreso</button>
-  <span class="small">La plata que te llega solo una vez la agregas en Inicio, con el botón + Agregar.</span>`;
+  <span class="small">La plata que te llega solo una vez la agregas en Inicio, con el botón + Agregar.</span>
+  ${esGuia()?`<div class="bottom"><button class="btn" data-act="guiaCuentas">Siguiente: tus cuentas${ic("sig",'style="stroke-width:2.4"')}</button></div>`:""}`;
 V.misCuentas = () => { const act = cuentasCfg().sort((a,b)=>a.dia-b.dia), arch=(S.cfg?.cuentas||[]).filter(c=>c.archivada);
-  return `<div class="top">${backBtn((S.stack[S.stack.length-1]||{}).view==="ajustes"?"Ajustes":"Atrás")}</div><div><h1 class="h1">Mis cuentas</h1><span class="txt">Toca una cuenta o el lápiz para cambiarla.</span></div>
-  <div class="grp">${act.map(c=>`<button class="li" data-act="editCuenta" data-id="${c.id}"><span class="n"><b>${esc(c.nombre)}</b><small>Día ${c.dia} · ${c.cada===2?"cada dos meses":c.variable?"el valor cambia":"cada mes"}</small></span><span class="num lv">${money(c.valor)}</span>${ic("pen",'class="ic pen"')}</button>`).join("")}</div>
+  return `${esGuia()?pasoGuia(2):`<div class="top">${backBtn((S.stack[S.stack.length-1]||{}).view==="ajustes"?"Ajustes":"Atrás")}</div>`}<div><h1 class="${esGuia()?"mes":"h1"}" ${esGuia()?'style="margin-top:6px"':""}>${esGuia()?"Tus cuentas":"Mis cuentas"}</h1><span class="txt">${esGuia()?"Las facturas que pagas: luz, agua, arriendo, celular… Crea una por una.":"Toca una cuenta o el lápiz para cambiarla."}</span></div>
+  ${act.length?"":`<div class="empty"><p class="small">Todavía no tienes cuentas.</p></div>`}<div class="grp" ${act.length?"":"hidden"}>${act.map(c=>`<button class="li" data-act="editCuenta" data-id="${c.id}"><span class="n"><b>${esc(c.nombre)}</b><small>Día ${c.dia} · ${c.cada===2?"cada dos meses":c.variable?"el valor cambia":"cada mes"}</small></span><span class="num lv">${money(c.valor)}</span>${ic("pen",'class="ic pen"')}</button>`).join("")}</div>
   <button class="btn2" data-act="editCuenta" data-id="">${ic("mas",'style="stroke-width:2.4"')}Crear cuenta</button>
-  ${arch.length?`<div class="sec" style="gap:8px;margin-top:6px"><h2 class="h2" style="font-size:20px">Cuentas que ya no pagas</h2><div class="grp">${arch.map(c=>`<div class="li static"><span class="n"><b style="color:var(--ink2)">${esc(c.nombre)}</b><small>${money(c.valor)} · día ${c.dia}</small></span><button class="link u" style="font-size:16px" data-act="desarchivar" data-id="${c.id}">Volver a pagar</button></div>`).join("")}</div></div>`:""}`; };
+  ${arch.length?`<div class="sec" style="gap:8px;margin-top:6px"><h2 class="h2" style="font-size:20px">Cuentas que ya no pagas</h2><div class="grp">${arch.map(c=>`<div class="li static"><span class="n"><b style="color:var(--ink2)">${esc(c.nombre)}</b><small>${money(c.valor)} · día ${c.dia}</small></span><button class="link u" style="font-size:16px" data-act="desarchivar" data-id="${c.id}">Volver a pagar</button></div>`).join("")}</div></div>`:""}
+  ${esGuia()?`<div class="bottom"><button class="btn" data-act="guiaBolsillos">Siguiente: tus bolsillos${ic("sig",'style="stroke-width:2.4"')}</button></div>`:""}`; };
 V.cuenta = () => { const p=S.p; const f=p.f; const r=(campo,a,b,ta,tb)=>`<div class="seg" role="radiogroup">${[[a,ta],[b,tb]].map(([v,t])=>`<button class="opt ${f[campo]===v?"on":""}" role="radio" aria-checked="${f[campo]===v}" data-act="campoCuenta" data-c="${campo}" data-v="${JSON.stringify(v).replace(/"/g,"&quot;")}"><span class="radio"></span>${t}</button>`).join("")}</div>`;
   return `<div class="top">${backBtn("Mis cuentas")}</div><h1 class="h1">${p.id?esc(f.nombre||"Cuenta"):"Crear cuenta"}</h1>
   <div style="display:flex;flex-direction:column;gap:8px"><label for="cnom" class="q">¿Cómo se llama?</label><input id="cnom" class="inp" type="text" autocomplete="off" value="${esc(f.nombre||"")}" placeholder="Ej.: Luz" data-field="f.nombre"></div>
@@ -731,6 +733,14 @@ V.mes = () => { const m = (S.meses||[]).find(x=>x.key===S.p.id); if(!m) return V
   ${notas.length?`<div class="sec"><h2 class="h2">Otros <span style="font-size:16px;font-weight:500;color:var(--ink2)">· gastos sin bolsillo</span></h2><div class="grp">${notas.map(g=>`<div class="li static"><span class="n"><b ${g.nota?"":'style="color:var(--ink2);font-weight:500"'}>${g.nota?esc(g.nota):"Sin nombre"}</b><small>${Number(g.fecha.slice(8))} ${fechaDe(g.fecha)}</small></span><span class="num lv">${money(g.valor)}</span></div>`).join("")}</div></div>`:""}`; };
 
 /* ---------- primera vez ---------- */
+V.bolsillosGuia = () => { const o = ordenados().find(b=>b.otros); const libre = o ? quedan(o) : 0;
+  return `${pasoGuia(3)}<div><h1 class="mes" style="margin-top:6px">Tus bolsillos</h1><span class="txt">Separa plata para lo que no son cuentas: mercado, transporte, gustos… Cada gasto se resta de su bolsillo.</span></div>
+  <section class="hero lila" style="gap:6px;padding:16px 22px"><span class="q">Tienes libre para repartir</span><span class="num cifra" ${libre<0?'style="color:var(--rojo-t)"':""}>${money(libre)}</span><span style="font-size:16px;color:var(--lila-t)">Lo que no pongas en un bolsillo queda en Otros.</span></section>
+  <div class="sec">${ordenados().filter(b=>!b.otros).map(liBolsillo).join("")}</div>
+  <button class="btn2" data-act="crear">${ic("mas",'style="stroke-width:2.4"')}Crear bolsillo</button>
+  <div class="bottom"><button class="btn" data-act="terminarGuia">Listo, ver mi mes</button></div>`; };
+const esGuia = () => !!S.p.guia;
+const pasoGuia = n => `<div style="display:flex;flex-direction:column;gap:10px">${backBtn("Atrás")}${pasos(n)}</div>`;
 V.bienvenida = () => { const k = mesKey(hoy()); const sig = mesSig(k); const casi = hoy().getDate() >= DIA_PROXIMO;
   return `${HEADER}
   <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px"><h1 class="mes">Hola, te damos la bienvenida</h1><p class="txt" style="font-size:18px">Suma te ayuda a separar la plata de tus cuentas y a ver cuánto te queda para lo demás.</p></div>
@@ -743,7 +753,7 @@ A_arrancar = async (el) => { if(!S.db || S.arrancando) return; S.arrancando = tr
   cfg.avisos = { cuando:"antes", ...(cfg.avisos||{}) }; if(!cfg.avisos.correo) cfg.avisos.correo = S.user?.email || "";
   const mes = { mes:k, ingresos:[], cuentas:{}, bolsillos:[{ id:"otros", nombre:"Otros", otros:true, asignado:0 }], gastos:[], desdeAhorro:0 };
   try { await Promise.all([ S.db.doc("config/main").set(cfg), S.db.doc("meses/"+k).set(mes), S.db.doc("ahorro/main").set(S.ahorro||{saldo:0,movimientos:[]}) ]);
-    await S.db.doc("estado/main").set({ mesActual:k }); S.stack=[]; S.view="inicio"; S.p={};
+    await S.db.doc("estado/main").set({ mesActual:k }); S.stack=[{view:"inicio",p:{}}]; S.view="recibo"; S.p={guia:1}; ir("ingreso1",{monto:0, setup:true, volverA:"recibo"});
   } catch(e){ mostrarToast("No se pudo empezar. Revisa tu conexión e intenta otra vez."); }
   S.arrancando = false; };
 function tarjetaArmar(){ if(!S.cfg || S.cfg.armado !== false) return "";
@@ -785,9 +795,12 @@ A.menu = () => ir("menu",{base:S.view},true);
 A.cerrarHoja = () => { if(S.view==="menu"){ S.view=S.p.base; S.p={}; } else if(S.view==="noAlcanza"){ S.view="gasto"; } else if(S.view==="borrar"){ S.view="bolsillo"; } render(); };
 A.deshacer = deshacer;
 A.arrancar = el => A_arrancar(el);
-A.setIngreso = () => ir("ingreso1",{monto:0, setup:true});
-A.setCuentas = () => ir("misCuentas");
-A.setBolsillos = () => tab("bolsillos");
+A.setIngreso = () => ir("recibo",{guia:1});
+A.setCuentas = () => ir("misCuentas",{guia:2});
+A.setBolsillos = () => ir("bolsillos",{guia:3});
+A.guiaCuentas = () => ir("misCuentas",{guia:2});
+A.guiaBolsillos = () => ir("bolsillos",{guia:3});
+A.terminarGuia = () => { A.armado(); tab("inicio"); };
 A.armado = () => { const prevC=clone(S.cfg), c=clone(S.cfg); c.armado=true; S.cfg=c; render(); guardar([{path:"config/main",data:c,prev:prevC}], "Listo. Puedes cambiar todo en Ajustes."); };
 A.guia = el => { marcarGuia(); ir("guia",{paso:+(el?.dataset?.paso||0)}); };
 A.guia0 = () => A.guia();
@@ -846,7 +859,7 @@ A.renombrar = () => ir("crear1",{renombrar:S.p.id});
 A.idea = el => { S.p.nombre = el.dataset.v; render(); };
 A.crear2 = () => { const n=(S.p.nombre||"").trim(); if(!n) return; ir("crear2",{nombre:n, color:nextColor(), monto:0}); };
 function crearB(monto){ const p=S.p; const b={id:uid(), nombre:p.nombre, icono:iconoPara(p.nombre), color:p.color, asignado:monto};
-  cambioMes(m=>{ const o = m.bolsillos.filter(x=>!x.otros); const ot = m.bolsillos.filter(x=>x.otros); m.bolsillos=[...o,b,...ot]; }, "Creaste el bolsillo "+p.nombre); A.cancelarFlujo(); }
+  cambioMes(m=>{ const o = m.bolsillos.filter(x=>!x.otros); const ot = m.bolsillos.filter(x=>x.otros); m.bolsillos=[...o,b,...ot]; }, "Creaste el bolsillo "+p.nombre); S.stack.some(x=>x.view==="bolsillos") ? volverA("bolsillos") : A.cancelarFlujo(); }
 A.guardarCrear = () => crearB(S.p.monto||0);
 A.guardarCrear0 = () => crearB(0);
 A.guardarNombre = () => { const n=(S.p.nombre||"").trim(); if(!n) return; const id=S.p.renombrar; cambioMes(m=>{ const b=m.bolsillos.find(x=>x.id===id); b.nombre=n; b.icono=iconoPara(n); }, "Nombre cambiado"); volver(); };
@@ -937,7 +950,7 @@ document.addEventListener("input", e => { const el=e.target; const k=el.dataset.
 
 /* ---------- conexión ---------- */
 const GOOGLE = `<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="#fff" d="M21.6 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.4a4.6 4.6 0 0 1-2 3v2.5h3.2c1.9-1.7 3-4.3 3-7.3z"/><path fill="#fff" d="M12 22c2.7 0 5-.9 6.6-2.4l-3.2-2.5c-.9.6-2 1-3.4 1-2.6 0-4.8-1.8-5.6-4.1H3.1v2.6A10 10 0 0 0 12 22z" opacity=".8"/><path fill="#fff" d="M6.4 14a6 6 0 0 1 0-3.9V7.5H3.1a10 10 0 0 0 0 9z" opacity=".6"/><path fill="#fff" d="M12 6c1.5 0 2.8.5 3.8 1.5l2.9-2.9A10 10 0 0 0 3.1 7.5L6.4 10C7.2 7.8 9.4 6 12 6z" opacity=".7"/></svg>`;
-const caja = (titulo, texto, extra="") => `<div style="display:flex;flex-direction:column;align-items:center;gap:18px;text-align:center;padding-top:28px"><img src="logo.png" alt="Suma" style="height:32px"><img src="icon-512.png" alt="" style="width:150px;height:150px;border-radius:36px"><h1 class="h1">${titulo}</h1><p class="txt" style="font-size:17px;max-width:30ch">${texto}</p>${extra}</div>`;
+const caja = (titulo, texto, extra="") => `<div style="display:flex;flex-direction:column;align-items:center;gap:18px;text-align:center;padding-top:28px"><img src="logo.png?v=2" alt="Suma" style="height:32px"><img src="icon-512.png" alt="" style="width:150px;height:150px;border-radius:36px"><h1 class="h1">${titulo}</h1><p class="txt" style="font-size:17px;max-width:30ch">${texto}</p>${extra}</div>`;
 function pantallaEntrar(error){
   $("#app").className="flow"; $("#layer").innerHTML="";
   $("#app").innerHTML = caja("Hola, te damos la bienvenida a Suma", "Entra con tu cuenta de Google para ver tus cuentas y tus bolsillos.",
