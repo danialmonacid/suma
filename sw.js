@@ -1,5 +1,5 @@
 // Suma: guarda la app para que abra rápido. Los datos siempre vienen de Firebase.
-const CACHE = "suma-v15";
+const CACHE = "suma-v16";
 const ARCHIVOS = ["./", "index.html", "logo.png", "icon-192.png", "icon-512.png", "apple-touch-icon.png", "manifest.webmanifest"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(ARCHIVOS))); self.skipWaiting(); });
 self.addEventListener("activate", e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k))))); self.clients.claim(); });
