@@ -85,6 +85,14 @@ h1,h2,p{margin:0}
 .btn2{display:flex;align-items:center;justify-content:center;gap:8px;min-height:56px;border-radius:28px;border:0;background:var(--card);box-shadow:var(--sombra);font-size:17px;font-weight:600;width:100%;cursor:pointer;color:var(--ink);padding:0 20px}
 .btn3{display:flex;align-items:center;justify-content:center;min-height:48px;font-size:17px;font-weight:600;background:none;border:0;width:100%;cursor:pointer;color:var(--ink)}
 .btn3.rojo{color:var(--rojo-t)}
+.pago{background:var(--card);border:2px solid var(--line);border-radius:22px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.pago .cod{display:flex;align-items:center;gap:12px;background:var(--bg,#F9F7F4);border-radius:16px;padding:10px 12px 10px 16px}
+.pago .cod .mid{display:flex;flex-direction:column;min-width:0;flex:1}
+.pago .cod .l{font-size:14px;font-weight:600;color:var(--ink2)}
+.pago .cod .v{font-size:20px;font-weight:700;overflow-wrap:anywhere;user-select:all}
+.pago .cod .link{font-size:16px;text-decoration:underline;text-underline-offset:3px;flex:none}
+.pago .cod .link .ic{width:18px;height:18px}
+.pago .btn .ic{width:20px;height:20px;stroke-width:2.2}
 .grp{background:var(--card);border:1.5px solid var(--line);border-radius:22px;overflow:hidden}
 .li{display:flex;align-items:center;gap:10px;padding:6px 14px 6px 16px;min-height:60px;border-bottom:1.5px solid var(--line2);width:100%;background:none;border-left:0;border-right:0;border-top:0;text-align:left;cursor:pointer;color:var(--ink)}
 .li:last-child{border-bottom:0}
@@ -393,6 +401,8 @@ const P = {
   atras:'<path d="m15 6-6 6 6 6"/>', sig:'<path d="m9 6 6 6-6 6"/>',
   pen:'<path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/><path d="m13.5 6.5 4 4"/>',
   check:'<path d="m5 12.5 4.5 4.5L19 7.5"/>',
+  externo:'<path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/>',
+  copiar:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>',
   alerta:'<path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/>',
   recibo:'<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h4"/><path d="M14 3v5h5M19 8l-5-5"/><circle cx="16.5" cy="16.5" r="2.8"/><path d="m18.6 18.6 2.4 2.4"/>',
   ayuda:'<circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.4c-.6.3-1 .8-1 1.5v.6"/><path d="M12 17v.01"/>',
@@ -729,8 +739,9 @@ V.valorCuenta = () => { const c = cuentaMes(cuentasCfg().find(x=>x.id===S.p.id))
   <span class="q" style="margin-top:4px">¿Cuánto llegó el recibo?</span>
   <section class="valor"><input id="monto" class="num cifra montoInp" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" enterkeyhint="done" value="${S.p.monto?money(S.p.monto):""}" placeholder="$0" data-field="monto" data-money aria-label="Valor"><span class="num small">${S.p.monto===c.valor?"Es el valor del mes pasado":"El mes pasado fue "+money(c.valor)}</span></section>
   
-  <div class="bottom"><span class="small" style="text-align:center">El próximo mes te sugerimos este mismo valor.</span><button class="btn" data-act="guardarValorCuenta" ${S.p.monto>0?"":"disabled"}>Guardar</button>
-  ${!c.pagada && c.toca?`<button class="btn3" data-act="pagarDesdeValor">Guardar y marcar pagado</button>`:""}</div>`; };
+  ${(c.link||c.codigo)?`<section class="pago" aria-label="Pagar en línea">${c.codigo?`<div class="cod"><span class="mid"><span class="l">Código de pago</span><span class="num v">${esc(c.codigo)}</span></span><button class="link" data-act="copiarCodigo">${ic("copiar")}Copiar</button></div>`:""}${c.link?`<a class="btn" href="${esc(c.link)}" target="_blank" rel="noopener" data-act="abrirPago">Pagar ${ic("externo")}</a>${c.codigo?`<span class="small" style="text-align:center">Al tocar Pagar, el código se copia solo.</span>`:""}`:""}</section>`:""}
+  <div class="bottom">${S.p.fuePago && !c.pagada && c.toca?`<span class="small" style="text-align:center">¿Ya pagaste? Márcala como pagada.</span><div class="par"><button class="btn2" data-act="guardarValorCuenta" ${S.p.monto>0?"":"disabled"}>Guardar</button><button class="btn" data-act="pagarDesdeValor" ${S.p.monto>0?"":"disabled"}>Marcar pagado</button></div>`:`<span class="small" style="text-align:center">El próximo mes te sugerimos este mismo valor.</span><button class="${c.link?"btn2":"btn"}" data-act="guardarValorCuenta" ${S.p.monto>0?"":"disabled"}>Guardar</button>
+  ${!c.pagada && c.toca?`<button class="btn3" data-act="pagarDesdeValor">Guardar y marcar pagado</button>`:""}`}</div>`; };
 
 /* detalle de bolsillo */
 V.bolsilloFavor = b => `<div class="top">${backBtn("Atrás")}</div>
@@ -837,6 +848,8 @@ V.cuenta = () => { const p=S.p; const f=p.f; const edit=!!p.id; const dia=parseI
   ${campo("¿El valor cambia?", dosOpc("f.variable", !!f.variable, [[true,"Sí cambia"],[false,"No cambia"]]))}
   ${campo("¿Cada cuánto llega?", dosOpc("f.cada", f.cada, [[1,"Cada mes"],[2,"Cada 2 meses"]]))}
   ${f.cada===2?campo("¿Toca pagarla este mes?", dosOpc("f.toca", !!f.toca, [[true,"Sí"],[false,"No"]])):""}
+  ${campo(`Link de pago <span class="opc">(opcional)</span>`, `<input id="clink" class="inp" type="url" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="500" value="${esc(f.link||"")}" placeholder="Pega aquí el link" data-field="f.link"><span class="small">La página donde pagas esta factura.</span>`, "clink")}
+  ${campo(`Código de pago <span class="opc">(opcional)</span>`, `<input id="ccod" class="inp num" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="40" value="${esc(f.codigo||"")}" placeholder="Ej.: 12345678" data-field="f.codigo"><span class="small">Referencia o número de contrato.</span>`, "ccod")}
   ${pieForm("guardarCuenta", edit?"Guardar":"Agregar factura", ok, edit && "archivar", "Ya no pagas esta factura")}`; };
 V.texto = () => { const k = tamGuardado(); return `<div class="top">${backBtn("Ajustes")}</div><div><h1 class="h1">Tamaño del texto</h1><span class="txt">Escoge el que leas mejor.</span></div>
   <div role="radiogroup" style="display:flex;flex-direction:column;gap:10px">${TAMANOS.map(([v,txt,z])=>`<button class="opt ${k===v?"on":""}" role="radio" aria-checked="${k===v}" data-act="setTamano" data-v="${v}" style="min-height:72px"><span class="radio"></span><span class="grow">${txt}</span><span style="font-size:${Math.round(22*z/0.88)}px;font-weight:800">Aa</span></button>`).join("")}</div>`; };
@@ -995,6 +1008,10 @@ A.guardarValorCuenta = (pagar) => { const id=S.p.id, v=S.p.monto; const cfgPrev=
   const prevM=clone(S.mes); const m=clone(S.mes); m.cuentas=m.cuentas||{}; m.cuentas[id]={...(m.cuentas[id]||{}), valor:v, verificada:true, ...(pagar===true?{pagada:true,fechaPago:ymd(hoy())}:{})}; S.mes=m;
   guardar([{path:"meses/"+S.mesKey,data:m,prev:prevM},{path:"config/main",data:cfg,prev:cfgPrev}], pagar===true? cc.nombre+" quedó pagada" : "Valor guardado"); volver(); };
 A.pagarDesdeValor = () => A.guardarValorCuenta(true);
+function copiarTexto(t){ try{ if(navigator.clipboard && window.isSecureContext){ navigator.clipboard.writeText(t).catch(()=>copiarViejo(t)); return; } }catch(e){} copiarViejo(t); }
+function copiarViejo(t){ try{ const x=document.createElement("textarea"); x.value=t; x.setAttribute("readonly",""); x.style.cssText="position:fixed;opacity:0;top:0;left:0"; document.body.appendChild(x); x.select(); document.execCommand("copy"); x.remove(); }catch(e){} }
+A.copiarCodigo = () => { const c=cuentasCfg().find(x=>x.id===S.p.id); if(!c||!c.codigo) return; copiarTexto(c.codigo); mostrarToast("Código copiado"); };
+A.abrirPago = () => { const c=cuentasCfg().find(x=>x.id===S.p.id); if(!c) return; if(c.codigo){ copiarTexto(c.codigo); mostrarToast("Código copiado. Pégalo en la página de pago."); } setTimeout(()=>{ S.p.fuePago=true; render(); }, 400); };
 A.pagar = el => { const id=el.dataset.id; const c=cuentasCfg().find(x=>x.id===id); el.setAttribute("aria-checked","true"); el.querySelector(".box").innerHTML = ic("check",'style="width:18px;height:18px;color:#fff;stroke-width:3"'); el.querySelector(".box").style.background="var(--ink)";
   setTimeout(()=>cambioMes(m=>{ m.cuentas=m.cuentas||{}; m.cuentas[id]={...(m.cuentas[id]||{}), pagada:true, fechaPago:ymd(hoy())}; }, c.nombre+" quedó pagada. Se pasa a Pagadas."), 350); };
 A.verBolsillo = el => ir("bolsillo",{id:el.dataset.id});
@@ -1078,11 +1095,11 @@ A.empezar = async () => { const D=S.draft; const r=resumenMes();
 A.recibo = () => ir("recibo"); A.misCuentas = () => ir("misCuentas"); A.meses = () => { ir("meses"); cargarMeses(); };
 A.editIngFijo = el => { const i=S.cfg.ingresosFijos.find(x=>x.id===el.dataset.id); if(!i) return; ir("ingreso",{editId:i.id, id:i.id, origen:"fijo", nombre:i.nombre, monto:i.valor, tipo:"fijo", variable:!!i.variable}); };
 A.editCuenta = el => { const id=el.dataset.id; const c=id?S.cfg.cuentas.find(x=>x.id===id):null; const toca = c ? !!((S.mes.cuentas||{})[c.id]||{}).toca : false;
-  ir("cuenta",{id, f: c?{nombre:c.nombre,valor:c.valor,dia:c.dia,variable:!!c.variable,cada:c.cada||1,toca}:{nombre:"",valor:0,dia:"",variable:false,cada:1,toca:true}}); };
+  ir("cuenta",{id, f: c?{nombre:c.nombre,valor:c.valor,dia:c.dia,variable:!!c.variable,cada:c.cada||1,toca,link:c.link||"",codigo:c.codigo||""}:{nombre:"",valor:0,dia:"",variable:false,cada:1,toca:true,link:"",codigo:""}}); };
 A.campoCuenta = el => { S.p.f[el.dataset.c] = JSON.parse(el.dataset.v); render(); };
 A.guardarCuenta = () => { const p=S.p, f=p.f; const dia=parseInt(f.dia,10);
   if(!String(f.nombre||"").trim() || !(f.valor>0) || !(dia>=1&&dia<=31)) return;
-  const prevC=clone(S.cfg), c=clone(S.cfg); const id=p.id||uid(); const datos={id,nombre:cap(f.nombre.trim()),valor:f.valor,dia,variable:!!f.variable,cada:f.cada};
+  const prevC=clone(S.cfg), c=clone(S.cfg); const id=p.id||uid(); const lk=String(f.link||"").trim(); const datos={id,nombre:cap(f.nombre.trim()),valor:f.valor,dia,variable:!!f.variable,cada:f.cada,link: lk ? (/^https?:\/\//i.test(lk)?lk:"https://"+lk) : "", codigo:String(f.codigo||"").trim()};
   const ix=c.cuentas.findIndex(x=>x.id===id); if(ix>=0) c.cuentas[ix]={...c.cuentas[ix],...datos}; else c.cuentas.push(datos); S.cfg=c;
   const prevM=clone(S.mes), m=clone(S.mes); m.cuentas=m.cuentas||{}; m.cuentas[id]={...(m.cuentas[id]||{}), valor:f.valor, toca: f.cada===2?!!f.toca:true}; S.mes=m;
   guardar([{path:"config/main",data:c,prev:prevC},{path:"meses/"+S.mesKey,data:m,prev:prevM}], p.id?"Cambios guardados":"Agregaste la factura "+datos.nombre); volver(); };
